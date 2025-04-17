@@ -1,10 +1,11 @@
+import importlib.resources
 import os
-import shutil
 from pathlib import Path
 
 import click
 import toml
 
+from .. import templates
 from ..env import Environment
 
 
@@ -18,8 +19,9 @@ def init_project(force: bool = False):
     # Check if the current directory already has GéraldMag files
     mag_toml_path = Path("mag.toml")
 
-    # Get the path to the template directory
-    template_dir = Path(__file__).parent.parent / "template"
+    # Access template resources using importlib.resources
+    templates_path = importlib.resources.files(templates)
+    init_templates = templates_path.joinpath("init")
 
     # Create the directory structure
     click.echo("Creating GéraldMag project structure...")
@@ -42,38 +44,44 @@ def init_project(force: bool = False):
 
     # Create a default CSS file
     default_css_path = Path("content/_default/styles/main.css")
-    css_template_path = template_dir / "init" / "main.css"
-    
+    css_template = init_templates.joinpath("main.css")
+
     if default_css_path.exists() and not force:
         click.echo(
             "Warning: Default CSS file already exists, skipping. Use --force to overwrite."
         )
     else:
-        shutil.copy(css_template_path, default_css_path)
+        with open(default_css_path, "w") as f:
+            css_content = css_template.read_text()
+            f.write(css_content)
         click.echo("Created default CSS file.")
 
     # Create example README file
     readme_path = Path("README.md")
-    readme_template_path = template_dir / "init" / "README.md"
-    
+    readme_template = init_templates.joinpath("README.md")
+
     if readme_path.exists() and not force:
         click.echo(
             "Warning: README.md already exists, skipping. Use --force to overwrite."
         )
     else:
-        shutil.copy(readme_template_path, readme_path)
+        with open(readme_path, "w") as f:
+            readme_content = readme_template.read_text()
+            f.write(readme_content)
         click.echo("Created README.md with basic instructions.")
-        
+
     # Create .gitignore file
     gitignore_path = Path(".gitignore")
-    gitignore_template_path = template_dir / "init" / "_gitignore"
-    
+    gitignore_template = init_templates.joinpath("_gitignore")
+
     if gitignore_path.exists() and not force:
         click.echo(
             "Warning: .gitignore already exists, skipping. Use --force to overwrite."
         )
     else:
-        shutil.copy(gitignore_template_path, gitignore_path)
+        with open(gitignore_path, "w") as f:
+            gitignore_content = gitignore_template.read_text()
+            f.write(gitignore_content)
         click.echo("Created .gitignore file.")
 
     click.echo(f"\n✅ GéraldMag project initialized successfully!")

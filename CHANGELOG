@@ -31,3 +31,5 @@
 - Updated init command to use the Environment class for generating default configuration
 - Enhanced Environment.load() to handle path-specific configuration parameters
 - Extracted hardcoded templates from init.py to external files in template/init directory
+- Switched from using Path(__file__) to importlib.resources for accessing template files
+- Renamed 'template' directory to 'templates' and made it a proper Python package
