@@ -1,0 +1,33 @@
+# Changelog
+
+## [Unreleased]
+
+### Added
+
+- `init` command to scaffold a new GéraldMag project with default structure and configuration
+- Entry point in pyproject.toml for running as `uv run geraldmag`
+- Environment class for centralized configuration management:
+  - Support for mandatory and optional configuration fields
+  - Methods for loading from and exporting to dictionaries
+  - Foundation for cascading environments (app → publication → article)
+- EnvPath class for intelligent path handling:
+  - Preserves raw paths as specified by users
+  - Resolves absolute paths relative to configuration file location
+  - Descriptor-based design with cached property for optimized access
+- Template system for publication structure:
+  - Template directory with skeleton files for new publications
+  - Boilerplate index.html with WeasyPrint compatibility
+  - SCSS template for styling publications
+- `new` command to create publication structures:
+  - Creates a new publication directory in the content folder
+  - Copies template files into the new publication
+  - Provides guidance on next steps after creation
+- Default .gitignore creation during project initialization that ignores build artifacts
+
+### Changed
+
+- Moved main.py into src/geraldmag/ directory for better organization
+- Improved init command to continue process when files already exist (with warnings)
+- Updated init command to use the Environment class for generating default configuration
+- Enhanced Environment.load() to handle path-specific configuration parameters
+- Extracted hardcoded templates from init.py to external files in template/init directory

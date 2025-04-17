@@ -1,0 +1,107 @@
+/* GéraldMag Publication Styles */
+
+// Variables
+$page-width: 210mm;
+$page-height: 297mm;
+$margin: 2cm;
+$primary-color: #336699;
+$text-color: #333333;
+$background-color: #ffffff;
+
+// Base styles
+@page {
+  size: $page-width $page-height;
+  margin: $margin;
+}
+
+body {
+  font-family: 'Times New Roman', Times, serif;
+  color: $text-color;
+  background-color: $background-color;
+  margin: 0;
+  padding: 0;
+}
+
+// Page layout
+.page {
+  page-break-after: always;
+  position: relative;
+  height: $page-height - ($margin * 2);
+}
+
+// Cover page
+.cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  
+  h1 {
+    font-size: 32pt;
+    color: $primary-color;
+    margin-bottom: 1cm;
+  }
+  
+  .publication-info {
+    margin-top: 2cm;
+    font-style: italic;
+  }
+}
+
+// Headings
+h1 {
+  font-size: 24pt;
+  margin-top: 1cm;
+}
+
+h2 {
+  font-size: 18pt;
+  margin-top: 0.8cm;
+  color: $primary-color;
+}
+
+h3 {
+  font-size: 14pt;
+  margin-top: 0.6cm;
+}
+
+// Content
+p {
+  font-size: 11pt;
+  line-height: 1.4;
+  margin-bottom: 0.5cm;
+}
+
+a {
+  color: $primary-color;
+  text-decoration: none;
+}
+
+// Article styling
+.article {
+  img {
+    max-width: 100%;
+    height: auto;
+    margin: 0.5cm 0;
+  }
+  
+  blockquote {
+    margin: 1cm 1cm;
+    padding: 0.5cm;
+    border-left: 3px solid $primary-color;
+    font-style: italic;
+    background-color: lighten($primary-color, 45%);
+  }
+}
+
+// Table of contents
+ul {
+  list-style-type: none;
+  padding-left: 0;
+  
+  li {
+    margin-bottom: 0.3cm;
+    font-size: 12pt;
+  }
+}

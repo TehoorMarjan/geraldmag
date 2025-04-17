@@ -1,0 +1,10 @@
+# GéraldMag generated directories
+out/
+_resources/
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

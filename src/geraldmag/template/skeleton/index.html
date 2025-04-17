@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="page cover">
+        <h1>{{ title }}</h1>
+        <div class="publication-info">
+            <p>Created with GéraldMag</p>
+        </div>
+    </div>
+
+    <div class="page">
+        <h2>Table of Contents</h2>
+        <ul>
+            {% for article in articles %}
+            <li><a href="#{{ article.id }}">{{ article.title }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% for article in articles %}
+    <div id="{{ article.id }}" class="page article">
+        {% include article.path %}
+    </div>
+    {% endfor %}
+</body>
+</html>
