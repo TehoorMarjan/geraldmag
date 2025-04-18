@@ -1,0 +1,247 @@
+# The `build` command
+
+## Requirements
+
+### Setup the environment
+
+- Get Environment.create() as app_env
+- Create a publication_env from app_env
+- Create a Context object that will be passed around with publication_env in its `env` property
+
+### The HTML Structure
+
+- It starts with the `index.html` file at the root of the `<publication>` folder.
+  - This file is a Jinja2 template
+  - The file drives the construction by calling Jinja2 functions
+  - It has access to the Context object
+- When a Markdown file is included
+  - A derived PageContext object is created from Context
+  - Its frontmatter is parsed into PageContext.page using python-frontmatter
+  - A random tag (use nanoid) is inserted in PageContext.scope (used for scoped CSS)
+  - The Markdown file is converted to HTML using the markdown library and available as PageContext.content
+  - A default template is used (`<geraldmag>templates/layout/article.html`) unless PageContext.page.template is defined
+  - The template is a Jinja2 template that is passed the PageContext object
+  - The produced HTML is returned to the caller that wanted to include the Markdown file
+  - If PageContext.page.style is set, it points to a CSS or SCSS file, in this case, the reference to the file is sent to Context.styles with:
+    - The absolute path to the file to include in the styles
+    - The PageContext.scope to scope the CSS
+- When an HTML file is included
+  - A derived PageContext object is created from Context
+  - A random tag (use nanoid) is inserted in PageContext.scope (used for scoped CSS)
+  - The content of the file is processed through Jinja2 in case it is a template and it is passed the PageContext (mostly to reference PageContext.scope)
+  - If a file style.css or style.scss is next to the html file, the reference to the file is sent to Context.styles with:
+    - The absolute path to the file to include in the styles
+    - The PageContext.scope to scope the CSS
+- The resulting single HTML is saved in `resources_dir / <publication> / index.html`
+
+### The Styles
+
+- The Context.styles is populated with the entrypoints:
+  - `content/_defauls/styles/main.scss`
+  - `content/<publication>/styles/main.scss`
+- Once the HTML Structure has been created, the Context.styles has received additionaly entrypoints with scopes
+- The scoped entrypoints are scoped using SCSS code (enclosing)
+- The list of entrypoints is processed into a single CSS using SCSS
+- The result is saved to a `resources_dir / <publication> / main.css`
+
+### Image Processing
+
+- Along the entire process of creating the HTML, we need to keep reference of all images and assign a unique tag to them (shasum, nanoid, ...)
+- The relationship is saved in the Context.images
+- All images are copied into `resources_dir / <publication> / images` so that they are readily available to WeasyPrint
+
+### Font Handling
+
+- Fonts are placed in a `fonts/` directory next to `styles/` in either the content directory or publication directory
+- Fonts are copied to `resources_dir / <publication> / fonts` so they are available to WeasyPrint
+- Font paths in CSS are updated to reference the copied fonts
+
+### Publication Configuration
+
+- Allow publication-specific configuration in `content/<publication>/publication.toml`
+- This configuration could include metadata, PDF settings, custom paths, etc.
+- Merge this with the app_env to create the publication_env
+
+### Final assembly
+
+- Once all has been processed, WeasyPrint API is called over the generated HTML, generated CSS (and if needed given the path to the ready images)
+- The final PDF is written to `output_dir / <publication>.pdf`
+- Consider providing hooks for pre and post processing steps
+
+## Software Architecture
+
+### Class Diagram
+
+```plantuml
+@startuml GéraldMag Build Architecture
+
+package commands.build {
+  class BuildCommand {
+    + build_process()
+  }
+}
+
+package env {
+  class Environment {
+    + title: str
+    + content_dir: EnvPath
+    + default_dir: EnvPath
+    + resources_dir: EnvPath
+    + output_dir: EnvPath
+  }
+}
+
+package assets {
+  class StyleCompiler {
+    + add_style()
+    + compile()
+  }
+
+  class ImageBucket {
+    + register_image()
+    + copy_images()
+  }
+
+  class FontBucket {
+    + register_font()
+    + copy_fonts()
+  }
+}
+
+package core {
+  class Builder {
+    + build()
+    - _build_html()
+    - _compile_scss()
+    - _generate_pdf()
+  }
+
+  class Context {
+    + env: Environment
+    + styles: StyleCompiler
+    + images: ImageBucket
+    + fonts: FontBucket
+    + publication: str
+  }
+
+  class PageContext {
+    + page: dict
+    + scope: str
+    + content: str
+  }
+
+  Context ^-- PageContext
+  Builder --> Context
+}
+
+package processors {
+  class ProcessorFactory {
+    + get_processor()
+  }
+
+  package types {
+    interface Processor {
+      + process()
+    }
+  }
+
+  package markdown {
+    class MarkdownProcessor {
+      + process()
+      - _get_frontmatter()
+      - _markdown_to_html()
+      - _make_article()
+    }
+  }
+
+  package html {
+    class HTMLProcessor {
+      + process()
+      - _add_styles()
+    }
+  }
+
+  MarkdownProcessor <|.. Processor
+  HTMLProcessor <|.. Processor
+  ProcessorFactory o-- Processor
+}
+
+package engine {
+  class Engine {
+    - _jinja_functions
+    + process()
+  }
+}
+
+BuildCommand --> Builder
+Context o-- Environment
+Context o-- StyleCompiler
+Context o-- ImageBucket
+Context o-- FontBucket
+Builder --> Engine
+Engine --> ProcessorFactory
+Processor --> PageContext
+
+@enduml
+```
+
+### File Hierarchy
+
+```plaintext
+geraldmag/
+├── src/
+│   └── geraldmag/
+│       ├── commands/
+│       │   └── build.py              # Contains build_process() function
+│       ├── env.py                    # Already existed
+│       ├── assets.py                 # Contains StyleCompiler, ImageBucket, FontBucket classes
+│       ├── core.py                   # Contains Builder, Context, and PageContext classes
+│       ├── processors/
+│       │   ├── __init__.py           # Contains ProcessorFactory class
+│       │   ├── types.py              # Contains PProcessor protocol (renamed from Processor)
+│       │   ├── markdown.py           # Contains MarkdownProcessor class
+│       │   └── html.py               # Contains HTMLProcessor class
+│       └── engine.py                 # Contains Engine class
+```
+
+## Additional Considerations
+
+### Libraries and Dependencies
+
+- **python-frontmatter**: For parsing YAML frontmatter from markdown files
+- **markdown**: For converting markdown content to HTML
+- **Jinja2**: For template processing
+- **libsass**: For SCSS compilation
+- **WeasyPrint**: For PDF generation
+- **nanoid**: For generating unique scoping identifiers
+- **Click**: For CLI interface
+
+### Error Handling
+
+- Implement comprehensive error handling at each processing stage
+- Provide clear error messages that point to the source file and issue
+- Consider validation of input files before processing begins
+
+### Performance Optimization
+
+- Consider parallel processing for image operations and style compilation
+- Cache compiled templates and processed markdown when possible
+
+### Extensibility
+
+- Design a plugin/hook system for extending functionality
+- Allow custom template engines beyond the default Jinja2
+- Support custom markdown processors and extensions
+
+### CLI Options
+
+- Add command-line options to customize the build process:
+  - `--clean`: Remove all generated files before building
+  - `--verbose`: Detailed logging of the build process
+  - `--output-path`: Override the default output location
+
+### Testing Strategy
+
+- Unit tests for each component
+- Integration tests for the complete build process
+- Sample publications for regression testing

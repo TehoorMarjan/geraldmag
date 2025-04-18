@@ -23,6 +23,12 @@
   - Copies template files into the new publication
   - Provides guidance on next steps after creation
 - Default .gitignore creation during project initialization that ignores build artifacts
+- Architecture and skeleton implementation for the `build` command:
+  - Designed modular object-oriented architecture for build process
+  - Created skeleton structure for components with method signatures and docstrings
+  - Set up protocol-based design with PProcessor interface for content processing
+  - Added factory pattern for processor instantiation based on file types
+  - Prepared context class hierarchy for state management during build
 
 ### Changed
 
@@ -33,3 +39,12 @@
 - Extracted hardcoded templates from init.py to external files in template/init directory
 - Switched from using Path(__file__) to importlib.resources for accessing template files
 - Renamed 'template' directory to 'templates' and made it a proper Python package
+
+### Planned
+
+- Complete implementation of the build command components
+- CLI integration of the build command
+- Add support for styling with SCSS
+- Add support for publication-specific configuration
+- Implement asset management for images and fonts
+- Implement PDF generation with WeasyPrint
