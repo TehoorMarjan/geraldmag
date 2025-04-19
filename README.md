@@ -53,7 +53,7 @@ my-magazine/
 1. The CLI is called with the name of a publication: `geraldmag build mag202504`
 2. The program reads the `mag.toml` configuration file
 3. The program processes the `index.html` file, which may contain Jinja2 template directives
-4. Using Jinja2, a single consolidated HTML file is created in `_resources/<publication>/` along with all necessary assets
+4. Using Jinja2, a single consolidated HTML file is created in `.build/<publication>/` along with all necessary assets
 5. The HTML file is passed to WeasyPrint for conversion to a PDF output in `out/<publication>.pdf`
 
 ## Configuration (mag.toml)
@@ -62,13 +62,15 @@ my-magazine/
 # Basic configuration
 title = "My Magazine"
 content_dir = "content"
-default_dir = "_default"
-resources_dir = "_resources"
+default_dir = "content/_default"
+build_dir = ".build"
 output_dir = "out"
+publication_config = "pub.toml"
+```
 
-# Publication-specific settings can be defined
-[publications.issue2025]
-title = "Spring Issue 2025"
+Publication-specific settings can be defined in the `pub.toml` file within each publication directory:
+
+```toml
 output = "magazine-spring-2025.pdf"
 ```
 
@@ -86,6 +88,21 @@ geraldmag build mag202504
 
 # Show version information
 geraldmag --version
+
+# For development (when installed with PDM)
+pdm run geraldmag <command>
+```
+
+## Development Workflow
+
+When developing GéraldMag, use PDM scripts for common tasks:
+
+```bash
+# Install development dependencies
+pdm install -d
+
+# Run code quality checks (isort, black, pyright)
+pdm run check
 ```
 
 ## Templating
@@ -94,7 +111,7 @@ GéraldMag uses Jinja2 for templating. You can include content from Markdown fil
 
 ```html
 <article>
-  {% include 'articles/myarticle/index.md' %}
+  {% content 'articles/myarticle/index.md' %}
 </article>
 ```
 

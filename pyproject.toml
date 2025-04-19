@@ -1,7 +1,7 @@
 [project]
 name = "geraldmag"
 version = "0.1.0"
-description = "Add your description here"
+description = "A tool for creating complex and large documents (like magazines)"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -13,19 +13,27 @@ dependencies = [
     "markdown>=3.8",
     "nanoid>=2.0.0",
 ]
+authors = [{ name = "Tehoor Marjan", email = "tehoor.marjan@gmail.com" }]
+license = { text = "MIT" }
+
+[dependency-groups]
+dev = ["black>=25.1.0", "isort>=6.0.1", "pyright>=1.1.399"]
 
 [project.scripts]
 geraldmag = "geraldmag.main:cli"
+check = "scripts.check:main"
 
 [tool.uv]
 package = true
 
-[dependency-groups]
-dev = [
-    "black>=25.1.0",
-    "isort>=6.0.1",
-    "pyright>=1.1.399",
-]
+[tool.pdm]
+distribution = true
+
+[tool.pdm.scripts]
+tisort = "isort ."
+tblack = "black ."
+tpyright = "pyright"
+check.composite = ["tblack", "tisort", "tpyright"]
 
 [tool.black]
 line-length = 79
@@ -35,7 +43,9 @@ profile = "black"
 line_length = 79
 
 [tool.pyright]
-include = [
-    "src"
-]
+include = ["src"]
 typeCheckingMode = "strict"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

@@ -5,7 +5,7 @@
 ### Added
 
 - `init` command to scaffold a new GéraldMag project with default structure and configuration
-- Entry point in pyproject.toml for running as `uv run geraldmag`
+- Entry point in pyproject.toml for running directly as `pdm run geraldmag`
 - Environment class for centralized configuration management:
   - Support for mandatory and optional configuration fields
   - Methods for loading from and exporting to dictionaries
@@ -46,6 +46,7 @@
 - Renamed 'template' directory to 'templates' and made it a proper Python package
 - Replaced simple function-based approach for content inclusion with a dedicated Jinja2 extension
 - Enhanced `Environment.create()` to accept additional parameters via `**kwargs` for better inheritance support
+- Switched from uv to PDM for dependency management and script execution
 
 ### Planned
 
