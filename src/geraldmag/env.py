@@ -3,7 +3,7 @@ Configuration environment for GéraldMag.
 """
 
 import functools
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Self, get_origin, get_type_hints
 
@@ -143,27 +143,6 @@ class PublicationEnvironment(Environment):
 
     publication_root: EnvPath
     publication_name: str
-
-    @classmethod
-    def from_env(
-        cls, env: Environment, publication_root: EnvPath, publication_name: str
-    ) -> Self:
-        """
-        Create a PublicationEnvironment instance from a base Environment.
-
-        Args:
-            env: Base Environment instance
-            publication_root: Path to the publication root directory
-            publication_name: Name of the publication
-
-        Returns:
-            Configured PublicationEnvironment instance
-        """
-        return cls(
-            **asdict(env),
-            publication_root=publication_root,
-            publication_name=publication_name,
-        )
 
     @classmethod
     def create(

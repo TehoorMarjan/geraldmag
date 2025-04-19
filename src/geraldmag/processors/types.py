@@ -5,7 +5,7 @@ Type definitions for GéraldMag processors.
 from pathlib import Path
 from typing import Protocol
 
-from ..core import PageContext
+from ..context import PageContext
 
 
 class PProcessor(Protocol):

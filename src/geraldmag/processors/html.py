@@ -4,7 +4,7 @@ HTML processor for GéraldMag.
 
 from pathlib import Path
 
-from ..core import PageContext
+from ..context import PageContext
 
 
 class HTMLProcessor:

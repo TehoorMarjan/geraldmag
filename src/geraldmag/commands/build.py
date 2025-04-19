@@ -6,8 +6,8 @@ from pathlib import Path
 
 import click
 
-from ..core import Builder
-from ..env import Environment, EnvPath, PublicationEnvironment
+from ..builder import Builder
+from ..env import EnvPath, PublicationEnvironment
 
 
 def build_process(
@@ -25,29 +25,25 @@ def build_process(
         output_path: Optional custom output path for the PDF
         verbose: If True, show detailed logging
     """
-    # Implementation will go here
-    env = Environment.create()
+    # publication_name may either be a relative path or the name of a
+    # publication inside env.content_dir
+    pub_path = Path(publication_name)
+    # Initialise like publication_name is a relative path
+    env = PublicationEnvironment.create(
+        publication_root=EnvPath(publication_name),
+        publication_name=pub_path.name,
+    )
+    # If finally, publication_name is not a relative path, change environment
+    if pub_path.name == publication_name:
+        # publication_name is the name of a publication inside env.content_dir
+        env.publication_root = EnvPath(
+            publication_name, env.content_dir.absolute
+        )
     if verbose:
         env.verbose = True
     if output_path is not None:
         env.load({"output_path": output_path}, Path.cwd())
-    # publication_name may either be a relative path or the name of a
-    # publication inside env.content_dir
-    pub_path = Path(publication_name)
-    if pub_path.name == publication_name:
-        # publication_name is the name of a publication inside env.content_dir
-        pub_path = EnvPath(publication_name, env.content_dir.absolute)
-        pub_name = publication_name
-    else:
-        # publication_name is a relative path
-        pub_name = pub_path.name
-        pub_path = EnvPath(publication_name)
-    pub_env = PublicationEnvironment.from_env(
-        env=env,
-        publication_root=pub_path,
-        publication_name=pub_name,
-    )
-    builder = Builder(env=pub_env)
+    builder = Builder(env=env)
     if clean:
         builder.clean()
     builder.build()

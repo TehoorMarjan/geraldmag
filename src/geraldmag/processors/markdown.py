@@ -8,7 +8,7 @@ from typing import Any
 import frontmatter  # type: ignore
 import markdown
 
-from ..core import PageContext
+from ..context import PageContext
 
 
 class MarkdownProcessor:

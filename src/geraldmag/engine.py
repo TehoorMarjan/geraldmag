@@ -10,7 +10,7 @@ from jinja2 import Environment, nodes
 from jinja2.ext import Extension
 from jinja2.parser import Parser
 
-from .core import Context, PageContext
+from .context import Context, PageContext
 from .processors import ProcessorFactory
 
 

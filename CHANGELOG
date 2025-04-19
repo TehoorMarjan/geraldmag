@@ -47,6 +47,10 @@
 - Replaced simple function-based approach for content inclusion with a dedicated Jinja2 extension
 - Enhanced `Environment.create()` to accept additional parameters via `**kwargs` for better inheritance support
 - Switched from uv to PDM for dependency management and script execution
+- Refactored code organization to solve circular import issues:
+  - Moved Builder class to a dedicated builder.py file
+  - Moved Context and PageContext classes to a dedicated context.py file
+  - Removed now-empty core.py file
 
 ### Planned
 
