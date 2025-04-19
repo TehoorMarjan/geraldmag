@@ -10,6 +10,7 @@
   - Support for mandatory and optional configuration fields
   - Methods for loading from and exporting to dictionaries
   - Foundation for cascading environments (app → publication → article)
+  - Flexible `create` classmethod that supports derived class parameters
 - EnvPath class for intelligent path handling:
   - Preserves raw paths as specified by users
   - Resolves absolute paths relative to configuration file location
@@ -29,6 +30,10 @@
   - Set up protocol-based design with PProcessor interface for content processing
   - Added factory pattern for processor instantiation based on file types
   - Prepared context class hierarchy for state management during build
+- Custom Jinja2 extension `ContentExtension` for processing content files:
+  - Implemented as a proper Jinja2 extension with a dedicated tag
+  - Renamed from `include_content` to `content` for more intuitive use in templates
+  - Allows seamless integration of markdown and other content into HTML templates
 
 ### Changed
 
@@ -39,6 +44,8 @@
 - Extracted hardcoded templates from init.py to external files in template/init directory
 - Switched from using Path(__file__) to importlib.resources for accessing template files
 - Renamed 'template' directory to 'templates' and made it a proper Python package
+- Replaced simple function-based approach for content inclusion with a dedicated Jinja2 extension
+- Enhanced `Environment.create()` to accept additional parameters via `**kwargs` for better inheritance support
 
 ### Planned
 

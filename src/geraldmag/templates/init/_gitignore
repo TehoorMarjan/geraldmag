@@ -1,6 +1,6 @@
 # GéraldMag generated directories
 out/
-_resources/
+.build/
 
 # Editor directories and files
 .idea/

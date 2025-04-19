@@ -3,24 +3,25 @@ Core classes for GéraldMag.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import nanoid
 
 from .assets import FontBucket, ImageBucket, StyleCompiler
 from .engine import Engine
-from .env import Environment
+from .env import Environment, PublicationEnvironment
 
 
 @dataclass
 class Context:
     """
     Context object that holds the state of the build process.
-    
+
     Args:
         env: Environment configuration
         publication: Name of the publication
     """
+
     env: Environment
     publication: str
     styles: StyleCompiler = field(default_factory=StyleCompiler)
@@ -55,7 +56,7 @@ class Builder:
     Manages the build process for a publication.
     """
 
-    def __init__(self, publication_name: str, env: Environment):
+    def __init__(self, env: PublicationEnvironment):
         """
         Initialize a new Builder.
 
@@ -63,12 +64,18 @@ class Builder:
             publication_name: Name of the publication to build
             env: Environment configuration
         """
-        self.publication_name = publication_name
         self.env = env
-        self.context = Context(env, publication_name)
+        self.context = Context(env, "publication_name")  # TODO
         self.engine = Engine(self.context)
 
-    def build(self, clean: bool = False, output_path: Optional[str] = None):
+    def clean(self):
+        """
+        Clean the output directories before building.
+        """
+        # Implementation for cleaning output directories
+        pass
+
+    def build(self):
         """
         Build the publication into a PDF.
 
@@ -82,7 +89,7 @@ class Builder:
         # Build process steps
         self._build_html()
         self._compile_scss()
-        self._generate_pdf(output_path)
+        self._generate_pdf()
 
     def _build_html(self):
         """
@@ -98,12 +105,8 @@ class Builder:
 
     def _generate_pdf(
         self,
-        output_path: Optional[str] = None,
     ):
         """
         Generate the PDF from HTML and CSS.
-
-        Args:
-            output_path: Optional custom output path for the PDF
         """
         pass

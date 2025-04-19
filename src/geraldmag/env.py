@@ -3,9 +3,9 @@ Configuration environment for GéraldMag.
 """
 
 import functools
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, get_origin, get_type_hints
+from typing import Any, Dict, Self, get_origin, get_type_hints
 
 import toml
 
@@ -27,6 +27,10 @@ class EnvPath:
     @functools.cached_property
     def absolute(self) -> Path:
         """Return the absolute path resolved against the reference directory."""
+        path = Path(self.value)
+        if path.is_absolute():
+            return path.resolve()
+        # If the path is relative, resolve it against the reference directory
         return (self.setfrom / self.value).absolute().resolve()
 
     def __str__(self) -> str:
@@ -34,7 +38,7 @@ class EnvPath:
         return self.value
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Environment:
     """
     Configuration environment for GéraldMag.
@@ -54,10 +58,15 @@ class Environment:
     default_dir: EnvPath = field(
         default_factory=lambda: EnvPath("content/_default")
     )
-    resources_dir: EnvPath = field(
-        default_factory=lambda: EnvPath("_resources")
-    )
+    build_dir: EnvPath = field(default_factory=lambda: EnvPath(".build"))
     output_dir: EnvPath = field(default_factory=lambda: EnvPath("out"))
+    templates_dir: EnvPath = field(
+        default_factory=lambda: EnvPath("templates")
+    )
+
+    entrypoint: str = "index.html"
+    verbose: bool = False
+    publication_config: str = "pub.toml"
 
     def load(self, config_dict: Dict[str, Any], config_path: Path) -> None:
         """
@@ -84,7 +93,8 @@ class Environment:
 
     def dump_mandatory(self) -> Dict[str, Any]:
         """
-        Return a dictionary containing only the mandatory parameters with their default values.
+        Return a dictionary containing only the mandatory parameters with their
+        default values.
 
         Returns:
             Dictionary with mandatory parameters
@@ -97,17 +107,18 @@ class Environment:
         }
 
     @classmethod
-    def create(cls, config_path: str = "mag.toml") -> "Environment":
+    def create(cls, *, config_path: str = "mag.toml", **kwargs: Any) -> Self:
         """
         Create an Environment instance by loading from mag.toml if it exists.
 
         Args:
             config_path: Path to the configuration file (default: mag.toml)
+            **kwargs: Additional keyword arguments for derived classes
 
         Returns:
             Configured Environment instance
         """
-        env = cls()
+        env = cls(**kwargs)
 
         # Load config file if it exists
         config_file = Path(config_path).absolute().resolve()
@@ -118,4 +129,78 @@ class Environment:
             except Exception as e:
                 print(f"Warning: Error loading configuration file: {e}")
 
+        return env
+
+
+@dataclass(kw_only=True)
+class PublicationEnvironment(Environment):
+    """
+    Configuration environment for a specific publication in GéraldMag.
+
+    Inherits from Environment and can be extended with additional fields
+    specific to the publication.
+    """
+
+    publication_root: EnvPath
+    publication_name: str
+
+    @classmethod
+    def from_env(
+        cls, env: Environment, publication_root: EnvPath, publication_name: str
+    ) -> Self:
+        """
+        Create a PublicationEnvironment instance from a base Environment.
+
+        Args:
+            env: Base Environment instance
+            publication_root: Path to the publication root directory
+            publication_name: Name of the publication
+
+        Returns:
+            Configured PublicationEnvironment instance
+        """
+        return cls(
+            **asdict(env),
+            publication_root=publication_root,
+            publication_name=publication_name,
+        )
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        config_path: str = "mag.toml",
+        publication_root: EnvPath,
+        publication_name: str,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Create a PublicationEnvironment instance by loading from mag.toml and
+        publication configuration.
+
+        Args:
+            config_path: Path to the main configuration file (default: mag.toml)
+            publication_root: Path to the publication root directory
+            publication_name: Name of the publication
+
+        Returns:
+            Configured PublicationEnvironment instance
+        """
+        env = super().create(
+            config_path=config_path,
+            publication_root=publication_root,
+            publication_name=publication_name,
+            **kwargs,
+        )
+        config_file = (
+            (env.publication_root.absolute / env.publication_config)
+            .absolute()
+            .resolve()
+        )
+        if config_file.exists():
+            try:
+                config = toml.load(config_file)
+                env.load(config, config_file.parent)
+            except Exception as e:
+                print(f"Warning: Error loading configuration file: {e}")
         return env
